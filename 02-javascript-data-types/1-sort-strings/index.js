@@ -10,11 +10,7 @@ export function sortStrings(arr, param = 'asc') {
         sensitivity: 'case',
         caseFirst: 'upper'
     });
-    if (param === 'asc'){
-        newArr.sort((a, b) => collator.compare(a, b));
-    }
-    else if (param === 'desc'){
-        newArr.sort((a, b) => collator.compare(b, a));
-    }
+    const direction = param == 'asc' ? 1 : -1;
+    newArr.sort((a, b) => collator.compare(a, b) * direction);
     return newArr;
 }
