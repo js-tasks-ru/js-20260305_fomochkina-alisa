@@ -11,7 +11,7 @@ interface Options {
 export default class ColumnChart {
   public element: HTMLElement | null;
   public chartHeight = 50;
-  
+
   private data: number[];
   private label: string;
   private value: number;
@@ -28,8 +28,8 @@ export default class ColumnChart {
   }
 
   private template(): string {
-    const maxValue = Math.max(...this.data);
-    const scale = this.chartHeight / maxValue;
+    const maxValue = Math.max(...this.data, 0);
+    const scale = maxValue ? this.chartHeight / maxValue : 0;
 
     return `
       <div class="column-chart ${this.data.length === 0 ? 'column-chart_loading' : ''}" style="--chart-height: ${this.chartHeight}">
@@ -45,7 +45,7 @@ export default class ColumnChart {
             ${this.data
               .map(item => {
                 const value = Math.floor(item * scale);
-                const percent = (item / maxValue * 100).toFixed(0) + "%";
+                const percent = maxValue ? `${(item / maxValue * 100).toFixed(0)}%` : '0%';
                 return `<div style="--value: ${value}" data-tooltip="${percent}"></div>`;
               })
               .join("")}
@@ -56,9 +56,14 @@ export default class ColumnChart {
   }
 
   public update(data: number[]): void {
-    this.data = data;
-    
     if (!this.element) return;
+    this.data = data;
+
+    const chart = document.querySelector('.column-chart');
+    if (this.data.length === 0){
+      chart?.classList.add('column-chart_loading');
+      return;
+    }
 
     const body = this.element.querySelector('[data-element="body"]');
     if (!body) return;
@@ -76,6 +81,7 @@ export default class ColumnChart {
       .join('');
 
     body.innerHTML = columns;
+    chart?.classList.remove('column-chart_loading');
   }
 
   public remove(): void{
