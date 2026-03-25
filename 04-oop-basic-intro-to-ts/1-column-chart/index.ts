@@ -45,9 +45,6 @@ export default class ColumnChart {
   }
 
   private template(): string {
-    const maxValue = Math.max(...this.data, 0);
-    const scale = maxValue ? this.chartHeight / maxValue : 0;
-
     return `
       <div class="column-chart ${this.data.length === 0 ? 'column-chart_loading' : ''}" style="--chart-height: ${this.chartHeight}">
         <div class="column-chart__title">
@@ -89,10 +86,7 @@ export default class ColumnChart {
   }
 
   public destroy(): void{
-    if (this.element){
-      this.element.remove();
-      this.element = null;
-    }
-    
+    this.body = null;
+    this.remove();    
   }
 }

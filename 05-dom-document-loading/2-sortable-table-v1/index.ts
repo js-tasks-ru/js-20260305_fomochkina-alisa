@@ -75,18 +75,9 @@ export default class SortableTable {
       cell.removeAttribute('data-order');
     });
 
-    const allArrows = this.header?.querySelectorAll('[data-element="arrow"]');
-    allArrows?.forEach(arrow => arrow.remove());
-
     const headerCell = this.header?.querySelector(`[data-id="${field}"]`) as HTMLElement | null;
     if (headerCell) {
-      headerCell.setAttribute('data-order', order);
-      
-      const arrowSpan = document.createElement('span');
-      arrowSpan.setAttribute('data-element', 'arrow');
-      arrowSpan.className = 'sortable-table__sort-arrow';
-      arrowSpan.innerHTML = `<span class="sort-arrow ${order === 'asc' ? 'sort-arrow-asc' : 'sort-arrow-desc'}"></span>`;
-      headerCell.appendChild(arrowSpan);        
+      headerCell.setAttribute('data-order', order);  
     }
   }
 
@@ -96,6 +87,7 @@ export default class SortableTable {
         .map(item => {
           return `<div class="sortable-table__cell" data-id="${item.id}" data-sortable="${item.sortable}">
                     <span>${item.title}</span>
+                    ${item.sortable ? '<span class="sort-arrow"></span>' : ''}
                   </div>`;
         })
         .join('')}
@@ -106,30 +98,12 @@ export default class SortableTable {
     return `
       ${this.data
         .map(item => {
-          return `<a href="${this.getProductLink(item)}" class="sortable-table__row">
+          return `<a href="/products/${item.id}." class="sortable-table__row">
                   ${this.getTableRaw(item)}
                  </a>`;
         })
         .join('')}
     `; 
-  }
-
-  private getProductLink(product: Record<string, any>): string {
-    const parts = [];
-
-    if (product?.subcategory?.category?.id) {
-      parts.push(product.subcategory.category.id);
-    }
-
-    if (product?.subcategory?.id) {
-      parts.push(product.subcategory.id);
-    }
-
-    if (product?.id) {
-      parts.push(product.id);
-    }
-
-    return `/products/${parts.join('/')}`;
   }
 
   private getTableRaw(product: SortableTableData): string {
@@ -150,6 +124,7 @@ export default class SortableTable {
   }
 
   public destroy(){
-    this.remove();
+    this.body = null;
+    this.remove();    
   }
 }
