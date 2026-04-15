@@ -23,6 +23,8 @@ export default class DoubleSlider {
   private selected: DoubleSliderSelected;
   private onPointerMove: ((e: PointerEvent) => void) | null = null;
   private onPointerUp: (() => void) | null = null;
+  private onPointerDownLeft: ((event: PointerEvent) => void) | null = null;
+  private onPointerDownRight: ((event: PointerEvent) => void) | null = null;
   private currentSide: 'left' | 'right' | null = null;
 
   constructor({ min = 0, max = 100, formatValue = data => String(data), selected = {from: min, to: max} }: Options = {}) {
@@ -36,10 +38,13 @@ export default class DoubleSlider {
 
   private initEventListeners(): void {
     const leftThumb = this.element?.querySelector('.range-slider__thumb-left') as HTMLElement;
-    const rightThumb = this.element?.querySelector('.range-slider__thumb-right') as HTMLElement;
+    const rightThumb = this.element?.querySelector('.range-slider__thumb-right') as HTMLElement; 
 
-    leftThumb.addEventListener('pointerdown', (event) => this.onDragStart(event, 'left'));
-    rightThumb.addEventListener('pointerdown', (event) => this.onDragStart(event, 'right'));
+    this.onPointerDownLeft = (event: PointerEvent) => this.onDragStart(event, 'left');
+    this.onPointerDownRight = (event: PointerEvent) => this.onDragStart(event, 'right');
+
+    leftThumb.addEventListener('pointerdown', this.onPointerDownLeft);
+    rightThumb.addEventListener('pointerdown', this.onPointerDownRight);
   }
 
   private onDragStart(event: PointerEvent, side: 'left' | 'right'): void {
@@ -104,10 +109,8 @@ export default class DoubleSlider {
     const leftThumb = this.element?.querySelector('.range-slider__thumb-left') as HTMLElement;
     const rightThumb = this.element?.querySelector('.range-slider__thumb-right') as HTMLElement;
 
-    const spans = this.element?.querySelectorAll('.range-slider > span') as NodeListOf<HTMLElement>;
-
-    const fromEl = spans[0];
-    const toEl = spans[1];
+    const from = this.element.querySelector('[data-element="from"]') as HTMLElement;
+    const to = this.element.querySelector('[data-element="to"]') as HTMLElement;
 
     progress.style.left = `${left}%`;
     progress.style.right = `${right}%`;
@@ -115,8 +118,8 @@ export default class DoubleSlider {
     leftThumb.style.left = `${left}%`;
     rightThumb.style.right = `${right}%`;
 
-    fromEl.textContent = this.formatValue(Math.round(this.selected.from));
-    toEl.textContent = this.formatValue(Math.round(this.selected.to));
+    from.textContent = this.formatValue(Math.round(this.selected.from));
+    to.textContent = this.formatValue(Math.round(this.selected.to));
   }
 
   private template(): string {
@@ -170,8 +173,23 @@ export default class DoubleSlider {
       document.removeEventListener('pointerup', this.onPointerUp);
     }
 
-    this.element?.remove();
+    if (this.element) {
+      const leftThumb = this.element.querySelector('.range-slider__thumb-left') as HTMLElement;
+      const rightThumb = this.element.querySelector('.range-slider__thumb-right') as HTMLElement;
+
+      if (leftThumb && this.onPointerDownLeft) {
+        leftThumb.removeEventListener('pointerdown', this.onPointerDownLeft);
+      }
+
+      if (rightThumb && this.onPointerDownRight) {
+        rightThumb.removeEventListener('pointerdown', this.onPointerDownRight);
+      }
+    }
+
+    this.onPointerDownLeft = null;
+    this.onPointerDownRight = null;
     this.onPointerMove = null;
     this.onPointerUp = null;
+    this.element?.remove();
   }
 }

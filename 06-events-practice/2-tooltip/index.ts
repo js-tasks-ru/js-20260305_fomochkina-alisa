@@ -2,7 +2,6 @@ export default class Tooltip {
     private static instance: Tooltip | null = null;
 
     public element: HTMLElement | null = null;
-    private lastEvent: MouseEvent | null = null;
 
     private elementsWithTooltips: Map<HTMLElement, {
         pointerover: (e: MouseEvent) => void;
@@ -24,13 +23,11 @@ export default class Tooltip {
 
         if (tooltipDiv) {
             const mousePointerOverHandler = (event: MouseEvent) => {
-                this.lastEvent = event;
                 this.showTooltip(event);
             };
 
             const mousePointerMoveHandler = (event: MouseEvent) => {
-                this.lastEvent = event;
-                this.moveTooltip();
+                this.moveTooltip(event);
             };
 
             const mousePointerOutHandler = () => {
@@ -56,14 +53,12 @@ export default class Tooltip {
             this.element.innerHTML = html; 
             document.body.appendChild(this.element);
         }
-
-        this.moveTooltip();
     }
 
-    private moveTooltip() {
-        if (this.element && this.lastEvent) {
-            this.element.style.left = `${this.lastEvent.clientX + 15}px`;
-            this.element.style.top = `${this.lastEvent.clientY + 15}px`;
+    private moveTooltip(event: MouseEvent) {
+        if (this.element) {
+            this.element.style.left = `${event.clientX + 15}px`;
+            this.element.style.top = `${event.clientY + 15}px`;
             this.element.style.position = 'fixed';
         }
     }
